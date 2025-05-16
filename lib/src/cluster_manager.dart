@@ -40,7 +40,7 @@ class ClusterManager<T extends ClusterItem> {
   final void Function(Set<Marker>) updateMarkers;
 
   /// Function to call before updating markers
-  final void Function(List<Cluster<T>>)? onBeforeMarkersBuild;
+  final Future<void> Function(List<Cluster<T>>)? onBeforeMarkersBuild;
 
   /// Zoom levels configuration
   final List<double> levels;
@@ -87,7 +87,7 @@ class ClusterManager<T extends ClusterItem> {
     List<Cluster<T>> mapMarkers = await getMarkers();
 
     if (onBeforeMarkersBuild != null) {
-      onBeforeMarkersBuild!(mapMarkers);
+      await onBeforeMarkersBuild!(mapMarkers);
     }
 
     final Set<Marker> markers =
