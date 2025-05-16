@@ -24,7 +24,9 @@ class ClusterManager<T extends ClusterItem> {
       this.maxItemsForMaxDistAlgo = 200,
       this.clusterAlgorithm = ClusterAlgorithm.GEOHASH,
       this.maxDistParams,
-      this.stopClusteringZoom})
+      this.stopClusteringZoom,
+      this.onBeforeMarkersBuild
+      })
       : this.markerBuilder = markerBuilder ?? _basicMarkerBuilder,
         assert(levels.length <= precision);
 
@@ -36,6 +38,9 @@ class ClusterManager<T extends ClusterItem> {
 
   /// Function to update Markers on Google Map
   final void Function(Set<Marker>) updateMarkers;
+
+  /// Function to call before updating markers
+  final void Function(List<Cluster<T>>)? onBeforeMarkersBuild;
 
   /// Zoom levels configuration
   final List<double> levels;
@@ -80,6 +85,10 @@ class ClusterManager<T extends ClusterItem> {
 
   void _updateClusters() async {
     List<Cluster<T>> mapMarkers = await getMarkers();
+
+    if (onBeforeMarkersBuild != null) {
+      onBeforeMarkersBuild!(mapMarkers);
+    }
 
     final Set<Marker> markers =
         Set.from(await Future.wait(mapMarkers.map((m) => markerBuilder(m))));
