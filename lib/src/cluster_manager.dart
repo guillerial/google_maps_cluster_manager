@@ -25,6 +25,7 @@ class ClusterManager<T extends ClusterItem> {
       this.clusterAlgorithm = ClusterAlgorithm.GEOHASH,
       this.maxDistParams,
       this.stopClusteringZoom,
+      this.stopClusteringItemsNumber,
       this.onBeforeMarkersBuild
       })
       : this.markerBuilder = markerBuilder ?? _basicMarkerBuilder,
@@ -39,9 +40,6 @@ class ClusterManager<T extends ClusterItem> {
   /// Function to update Markers on Google Map
   final void Function(Set<Marker>) updateMarkers;
 
-  /// Function to call before updating markers
-  final Future<void> Function(List<Cluster<T>>)? onBeforeMarkersBuild;
-
   /// Zoom levels configuration
   final List<double> levels;
 
@@ -55,6 +53,12 @@ class ClusterManager<T extends ClusterItem> {
 
   /// Zoom level to stop cluster rendering
   final double? stopClusteringZoom;
+
+  /// Number of items to stop cluster rendering
+  final int? stopClusteringItemsNumber;
+
+  /// Function to call before updating markers
+  final Future<void> Function(List<Cluster<T>>)? onBeforeMarkersBuild;
 
   /// Precision of the geohash
   static final int precision = kIsWeb ? 12 : 20;
@@ -134,8 +138,10 @@ class ClusterManager<T extends ClusterItem> {
       return inflatedBounds.contains(i.location);
     }).toList();
 
-    if (stopClusteringZoom != null && _zoom >= stopClusteringZoom!)
+    if (stopClusteringZoom != null && _zoom >= stopClusteringZoom! ||
+        stopClusteringItemsNumber != null && visibleItems.length <= stopClusteringItemsNumber!) {
       return visibleItems.map((i) => Cluster<T>.fromItems([i])).toList();
+    }
 
     List<Cluster<T>> markers;
 
